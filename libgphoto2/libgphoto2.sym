@@ -41,6 +41,7 @@ gp_camera_init
 gp_camera_list_config
 gp_camera_new
 gp_camera_ref
+gp_camera_reset
 gp_camera_set_abilities
 gp_camera_set_config
 gp_camera_set_single_config

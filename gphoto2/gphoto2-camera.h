@@ -251,6 +251,7 @@ typedef int (*CameraAboutFunc)     (Camera *camera, CameraText *text,
 typedef int (*CameraWaitForEvent)  (Camera *camera, int timeout,
 				    CameraEventType *eventtype, void **eventdata,
 				    GPContext *context);
+typedef int (*CameraResetFunc)   (Camera *camera, GPContext *context);
 /**@}*/
 
 
@@ -300,6 +301,7 @@ typedef struct _CameraFunctions {
 	CameraCaptureFunc        capture;	/**< \brief Remote control the camera to capture */
 	CameraTriggerCaptureFunc trigger_capture;/**< \brief Remote control the camera to trigger capture */
 	CameraCapturePreviewFunc capture_preview;/**< \brief Preview viewfinder content. */
+	CameraResetFunc          reset;     /**< \brief Reset the camera */
 
 	/* Textual information */
 	CameraSummaryFunc summary;		/**< \brief Give a summary about the current camera status, translated. */
@@ -410,6 +412,8 @@ int gp_camera_wait_for_event     (Camera *camera, int timeout,
 
 int gp_camera_get_storageinfo    (Camera *camera, CameraStorageInformation**,
 				   int *, GPContext *context);
+
+int gp_camera_reset 	 	 (Camera *camera, GPContext *context);
 
 /**@}*/
 

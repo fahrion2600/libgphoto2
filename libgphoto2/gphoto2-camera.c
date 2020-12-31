@@ -1955,3 +1955,33 @@ gp_camera_stop_timeout (Camera *camera, unsigned int id)
 
 	camera->pc->timeout_stop_func (camera, id, camera->pc->timeout_data);
 }
+
+/**
+ * Performs any actions to reset the camera, like what would be done when
+ * releasing the camera. For Nikon, this sets the camera mode back to the
+ * camera.
+ *
+ * @param camera a #Camera
+ * @param context a #GPContext
+ * @return a gphoto2 error code
+ *
+ **/
+int
+gp_camera_reset (Camera *camera, GPContext *context)
+{
+	char *xname;
+	C_PARAMS (camera);
+	CHECK_INIT (camera, context);
+
+	if (!camera->functions->reset) {
+		gp_context_error (context, _("This camera cannot reset."));
+		CAMERA_UNUSED (camera, context);
+                return (GP_ERROR_NOT_SUPPORTED);
+	}
+
+	CHECK_RESULT_OPEN_CLOSE (camera, camera->functions->reset (
+					camera, context), context);
+
+	CAMERA_UNUSED (camera, context);
+	return (GP_OK);
+}

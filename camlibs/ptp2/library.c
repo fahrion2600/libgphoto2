@@ -9210,6 +9210,32 @@ debug_objectinfo(PTPParams *params, uint32_t oid, PTPObjectInfo *oi) {
 	GP_LOG_D ("  CaptureDate: 0x%08x", (unsigned int)oi->CaptureDate);
 }
 
+static int
+camera_reset (Camera *camera, GPContext *context)
+{
+	PTPParams	*params = &camera->pl->params;
+	uint16_t	ret;
+
+	GP_LOG_D ("camera_reset");
+
+	SET_CONTEXT_P(params, context);
+	switch (params->deviceinfo.VendorExtensionID) {
+	case PTP_VENDOR_NIKON:
+		if (ptp_operation_issupported(params, PTP_OC_NIKON_EndLiveView))
+			C_PTP (ptp_nikon_end_liveview (params));
+		params->inliveview = 0;
+
+		/* get the Nikon out of control mode again */
+		if (params->controlmode && ptp_operation_issupported(params,PTP_OC_NIKON_ChangeCameraMode)) {
+			ptp_nikon_changecameramode (params, 0);
+			params->controlmode = 0;
+		}
+		break;
+	}
+
+	return GP_OK;
+}
+
 static CameraFilesystemFuncs fsfuncs = {
 	.file_list_func		= file_list_func,
 	.folder_list_func	= folder_list_func,
@@ -9261,6 +9287,7 @@ camera_init (Camera *camera, GPContext *context)
 	camera->functions->set_config = camera_set_config;
 	camera->functions->list_config = camera_list_config;
 	camera->functions->wait_for_event = camera_wait_for_event;
+	camera->functions->reset = camera_reset;
 
 	/* We need some data that we pass around */
 	C_MEM (camera->pl = calloc (1, sizeof (CameraPrivateLibrary)));
