@@ -5105,7 +5105,7 @@ camera_fuji_capture (Camera *camera, CameraCaptureType type, CameraFilePath *pat
 		/* clear path, so we get defined results even without object info */
 		path->name[0]   = '\0';
 		path->folder[0] = '\0';
-	
+
 		C_PTP (ptp_getobjecthandles (params, PTP_HANDLER_SPECIAL, 0x000000, 0x000000, &handles));
 
 		/* if (handles.n == params->handles.n)
@@ -9211,24 +9211,29 @@ debug_objectinfo(PTPParams *params, uint32_t oid, PTPObjectInfo *oi) {
 }
 
 static int
-camera_reset (Camera *camera, GPContext *context)
+camera_change_mode (Camera *camera, CameraControlModeType mode,
+		GPContext *context)
 {
 	PTPParams	*params = &camera->pl->params;
 	uint16_t	ret;
+	uint32_t	new_mode;
 
-	GP_LOG_D ("camera_reset");
+	GP_LOG_D ("camera_change_mode");
 
 	SET_CONTEXT_P(params, context);
 	switch (params->deviceinfo.VendorExtensionID) {
 	case PTP_VENDOR_NIKON:
-		if (ptp_operation_issupported(params, PTP_OC_NIKON_EndLiveView))
-			C_PTP (ptp_nikon_end_liveview (params));
-		params->inliveview = 0;
+		if (mode == GP_CONTROL_MODE_CAMERA) {
+			new_mode = 0;
+		} else if (mode == GP_CONTROL_MODE_HOST) {
+			new_mode = 1;
+		} else {
+			new_mode = !params->controlmode;
+		}
 
-		/* get the Nikon out of control mode again */
-		if (params->controlmode && ptp_operation_issupported(params,PTP_OC_NIKON_ChangeCameraMode)) {
-			ptp_nikon_changecameramode (params, 0);
-			params->controlmode = 0;
+		if (ptp_operation_issupported(params,PTP_OC_NIKON_ChangeCameraMode)) {
+			ptp_nikon_changecameramode (params, new_mode);
+			params->controlmode = new_mode;
 		}
 		break;
 	}
@@ -9287,7 +9292,7 @@ camera_init (Camera *camera, GPContext *context)
 	camera->functions->set_config = camera_set_config;
 	camera->functions->list_config = camera_list_config;
 	camera->functions->wait_for_event = camera_wait_for_event;
-	camera->functions->reset = camera_reset;
+	camera->functions->change_mode = camera_change_mode;
 
 	/* We need some data that we pass around */
 	C_MEM (camera->pl = calloc (1, sizeof (CameraPrivateLibrary)));

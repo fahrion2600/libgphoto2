@@ -16,6 +16,7 @@ gp_bayer_interpolate
 gp_camera_autodetect
 gp_camera_capture
 gp_camera_capture_preview
+gp_camera_change_mode
 gp_camera_exit
 gp_camera_file_delete
 gp_camera_file_get
@@ -41,7 +42,6 @@ gp_camera_init
 gp_camera_list_config
 gp_camera_new
 gp_camera_ref
-gp_camera_reset
 gp_camera_set_abilities
 gp_camera_set_config
 gp_camera_set_single_config

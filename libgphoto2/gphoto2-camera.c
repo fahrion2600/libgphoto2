@@ -1957,30 +1957,34 @@ gp_camera_stop_timeout (Camera *camera, unsigned int id)
 }
 
 /**
- * Performs any actions to reset the camera, like what would be done when
- * releasing the camera. For Nikon, this sets the camera mode back to the
- * camera.
+ * Sets the camera control mode. On some cameras (e.g. Nikon), the control can
+ * be set to the host (PC), which blocks the UI on the camera. This function
+ * can be called to set it back to the camera. On a Nikon, this translates to
+ * the ChangeCameraMode PTP call. Some actions, namely performing a capture,
+ * set the camera mode to the PC.
  *
  * @param camera a #Camera
+ * @param mode what mode to set the camera to
  * @param context a #GPContext
  * @return a gphoto2 error code
  *
  **/
 int
-gp_camera_reset (Camera *camera, GPContext *context)
+gp_camera_change_mode (Camera *camera, CameraControlModeType mode,
+			 GPContext *context)
 {
 	char *xname;
 	C_PARAMS (camera);
 	CHECK_INIT (camera, context);
 
-	if (!camera->functions->reset) {
-		gp_context_error (context, _("This camera cannot reset."));
+	if (!camera->functions->change_mode) {
+		gp_context_error (context, _("This camera cannot change modes."));
 		CAMERA_UNUSED (camera, context);
                 return (GP_ERROR_NOT_SUPPORTED);
 	}
 
-	CHECK_RESULT_OPEN_CLOSE (camera, camera->functions->reset (
-					camera, context), context);
+	CHECK_RESULT_OPEN_CLOSE (camera, camera->functions->change_mode (
+					camera, mode, context), context);
 
 	CAMERA_UNUSED (camera, context);
 	return (GP_OK);

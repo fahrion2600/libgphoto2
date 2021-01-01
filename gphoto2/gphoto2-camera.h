@@ -110,6 +110,17 @@ typedef enum {
 } CameraEventType;
 
 /**
+ * \brief What control mode the camera should be in.
+ *
+ * Used by gp_camera_change_mode to set the camera control mode.
+ */
+typedef enum {
+	GP_CONTROL_MODE_CAMERA,	/**< \brief Camera is in control. */
+	GP_CONTROL_MODE_HOST,	/**< \brief Host is in control. */
+	GP_CONTROL_MODE_TOGGLE	/**< \brief Toggle current setting. */
+} CameraControlModeType;
+
+/**
  * \name Camera object member functions
  *
  * These functions must be implemented by a camlib and the camlib's
@@ -251,7 +262,8 @@ typedef int (*CameraAboutFunc)     (Camera *camera, CameraText *text,
 typedef int (*CameraWaitForEvent)  (Camera *camera, int timeout,
 				    CameraEventType *eventtype, void **eventdata,
 				    GPContext *context);
-typedef int (*CameraResetFunc)   (Camera *camera, GPContext *context);
+typedef int (*CameraChangeModeFunc)		(Camera *camera,
+					CameraControlModeType mode, GPContext *context);
 /**@}*/
 
 
@@ -301,7 +313,7 @@ typedef struct _CameraFunctions {
 	CameraCaptureFunc        capture;	/**< \brief Remote control the camera to capture */
 	CameraTriggerCaptureFunc trigger_capture;/**< \brief Remote control the camera to trigger capture */
 	CameraCapturePreviewFunc capture_preview;/**< \brief Preview viewfinder content. */
-	CameraResetFunc          reset;     /**< \brief Reset the camera */
+	CameraChangeModeFunc     change_mode;    /**< \brief Set the camera control mode */
 
 	/* Textual information */
 	CameraSummaryFunc summary;		/**< \brief Give a summary about the current camera status, translated. */
@@ -413,7 +425,8 @@ int gp_camera_wait_for_event     (Camera *camera, int timeout,
 int gp_camera_get_storageinfo    (Camera *camera, CameraStorageInformation**,
 				   int *, GPContext *context);
 
-int gp_camera_reset 	 	 (Camera *camera, GPContext *context);
+int gp_camera_change_mode 	 	 (Camera *camera, CameraControlModeType mode,
+				  GPContext *context);
 
 /**@}*/
 
